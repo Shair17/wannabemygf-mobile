@@ -19,7 +19,7 @@ export default function App() {
 			<StatusBar hidden />
 
 			<Container source={require('./assets/bg.jpg')}>
-				<Title text="¿QUIERES SER MI NOVIO? :3" />
+				<Title text="¿QUIERES SER MI NOVIA? :3" />
 
 				<View style={{ marginTop: 32, alignSelf: 'center' }}>
 					<View>
