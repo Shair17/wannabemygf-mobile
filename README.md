@@ -1,3 +1,7 @@
+# How it works
+
+![screenshot](https://raw.githubusercontent.com/Shair17/wannabemygf-mobile/main/diagram.png)
+
 # Wanna Be My (Girl|Boy)Fiend?
 
 Una divertiad forma de expresar tus sentimientos si eres programador, para iOS y Android.
