@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Wanna be mine? - IG: @shair.dev</title>
+		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script type="text/javascript">
+			const session = window.localStorage.getItem('@wannabemine/username');
+
+			if (!!session) {
+				window.location.href = `/u/${session}`;
+			}
+		</script>
+	</head>
+	<body class="min-h-screen bg-gray-100 grid place-items-center relative">
+		<div class="absolute top-4 right-4">
+			<div
+				class="bg-white rounded-md p-4 border border-blue-500 w-72 shadow transition-colors"
+			>
+				<p class="text-sm font-medium text-gray-900">
+					¿Tienes un proyecto en mente y quieres volverlo realidad?
+				</p>
+				<p class="text-xs mt-2">
+					Contáctame por
+					<a
+						class="text-blue-500 font-semibold"
+						target="_blank"
+						href="https://instagram.com/shair.dev"
+						>Instagram</a
+					>
+					o
+					<a class="text-blue-500 font-semibold" href="mailto:hello@shair.dev"
+						>hello@shair.dev</a
+					>
+				</p>
+			</div>
+		</div>
+		<div
+			class="bg-white rounded-md shadow p-4 max-w-lg w-full mx-auto relative space-y-4"
+		>
+			<div>
+				<h1 class="text-center text-black font-bold text-2xl">
+					Wanna be mine?
+				</h1>
+				<p class="text-center text-sm text-gray-600 mt-2">
+					Por favor ingresa tu nombre de usuario para continuar.
+				</p>
+			</div>
+
+			<form class="px-4 space-y-4" id="form">
+				<input
+					type="text"
+					id="username"
+					name="username"
+					class="w-full h-10 rounded-md ring-2 px-2 ring-blue-500 focus:ring-blue-600 focus:outline-none focus:border-blue-600 transition-colors"
+					placeholder="Ingresa un nombre de usuario, ejemplo: shair.dev"
+				/>
+				<p class="!mt-1 text-xs text-gray-500">
+					Aquí es donde crearás tu nombre de usuario.
+				</p>
+
+				<button
+					type="submit"
+					class="w-full px-4 py-2.5 font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition-colors"
+				>
+					Continuar
+				</button>
+			</form>
+
+			<p class="text-xs text-center text-gray-600">
+				Creado por Shair, Instagram:
+				<a
+					href="https://www.instagram.com/shair.dev/"
+					target="_blank"
+					class="text-blue-500 font-medium"
+					>@shair.dev</a
+				>
+			</p>
+		</div>
+		<script type="text/javascript">
+			const USERNAME_REGEX = /^[a-z][a-z0-9-_\.]{1,20}$/;
+			const form = document.getElementById('form');
+
+			form.addEventListener('submit', function (event) {
+				event.preventDefault();
+
+				const username = event.target[0].value;
+
+				if (!username || !USERNAME_REGEX.test(username)) {
+					alert('Ingresa un nombre de usuario válido.');
+					return;
+				}
+
+				const body = {
+					username,
+				};
+
+				fetch('/api/wannabemine', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(body),
+				})
+					.then((res) => res.json())
+					.then((data) => {
+						const isError =
+							data?.error &&
+							(data?.statusCode === 400 || data?.statusCode === 404);
+
+						if (isError) {
+							alert(`Error: ${data.message || 'Ocurrió un error inesperado.'}`);
+
+							return;
+						}
+
+						const canContinue = data.success;
+
+						if (canContinue) {
+							window.localStorage.setItem(
+								'@wannabemine/username',
+								data.username
+							);
+							window.location.href = `/u/${data.username}`;
+						} else {
+							alert('Ocurrió un error inesperado.');
+						}
+					})
+					.catch((error) => {
+						console.log('Error:', error);
+						alert('Ocurrió un error inesperado.');
+					});
+			});
+		</script>
+	</body>
+</html>

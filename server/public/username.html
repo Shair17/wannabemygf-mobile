@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Wanna be mine? - IG: @shair.dev</title>
+		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+		<script type="text/javascript">
+			const session = window.localStorage.getItem('@wannabemine/username');
+			const usernamePathname = window.location.pathname;
+			const usernameCleaned = usernamePathname.slice(3);
+			const usernameToFetch = session ?? usernameCleaned;
+			const isMySession = session === usernameCleaned;
+
+			let username;
+
+			if (!session || !isMySession) {
+				window.location.href = '/';
+			}
+
+			fetch(`/api/wannabemine/${usernameToFetch}`)
+				.then((response) => response.json())
+				.then((data) => {
+					const isError =
+						data?.error &&
+						(data?.statusCode === 400 || data?.statusCode === 404);
+
+					if (isError) {
+						window.localStorage.removeItem('@wannabemine/username');
+						alert(`Error: ${data?.message ?? 'Ocurrió un error inesperado.'}`);
+						window.location.href = '/';
+					}
+
+					const CanContinue = data?.username === session;
+
+					if (!CanContinue) {
+						window.localStorage.removeItem('@wannabemine/username');
+						window.location.href = '/';
+					} else {
+						username = data?.username;
+						window.__wannabemine__ = data;
+					}
+				})
+				.catch((error) => {
+					console.log('Error:', error);
+				});
+
+			window.document.title = `/u/${session} - Wanna be mine? - IG: @shair.dev`;
+		</script>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script src="/socket.io/socket.io.min.js"></script>
+	</head>
+	<body class="min-h-screen bg-gray-100 grid place-items-center relative">
+		<div class="absolute top-4 right-4">
+			<div
+				class="bg-white rounded-md p-4 border border-blue-500 w-72 shadow transition-colors"
+			>
+				<p class="text-sm font-medium text-gray-900">
+					¿Tienes un proyecto en mente y quieres volverlo realidad?
+				</p>
+				<p class="text-xs mt-2">
+					Contáctame por
+					<a
+						class="text-blue-500 font-semibold"
+						target="_blank"
+						href="https://instagram.com/shair.dev"
+						>Instagram</a
+					>
+					o
+					<a class="text-blue-500 font-semibold" href="mailto:hello@shair.dev"
+						>hello@shair.dev</a
+					>
+				</p>
+			</div>
+		</div>
+		<div
+			class="bg-white rounded-md shadow p-4 max-w-lg w-full mx-auto relative space-y-4"
+		>
+			<div>
+				<h1 id="greeting" class="text-center text-black font-bold text-2xl">
+					Hola
+				</h1>
+				<p class="text-center text-sm text-gray-600 mt-2">
+					Aquí verás las interacciones de esa persona en la app en tiempo real.
+				</p>
+			</div>
+
+			<div id="realtime-content" class="flex px-4 gap-4 items-center">
+				<div class="flex-1 text-center">
+					<div
+						id="yessir"
+						class="p-4 bg-green-50/50 rounded-md transition-colors"
+					>
+						<p class="font-bold text-green-500">Sí</p>
+					</div>
+					<span
+						id="yes_count"
+						class="text-center mt-2 block text-sm text-gray-500 font-medium"
+						>0</span
+					>
+				</div>
+				<div class="flex-1 text-center">
+					<div id="nope" class="p-4 bg-red-50/50 rounded-md transition-colors">
+						<p class="font-bold text-red-500">No</p>
+					</div>
+					<span
+						id="nope_count"
+						class="text-center mt-2 block text-sm text-gray-500 font-medium"
+						>0</span
+					>
+				</div>
+			</div>
+
+			<div class="text-center">
+				<button
+					onclick="clearSession({showErrorAlert:false})"
+					title="Al presionar este botón se borrarán tus datos del registro."
+					class="text-xs font-medium px-2 py-1 bg-rose-50 text-rose-900 rounded-md"
+				>
+					Cerrar sesión
+				</button>
+			</div>
+
+			<p class="text-xs text-center text-gray-600">
+				Creado por Shair, Instagram:
+				<a
+					href="https://www.instagram.com/shair.dev/"
+					target="_blank"
+					class="text-blue-500 font-medium"
+					>@shair.dev</a
+				>
+			</p>
+		</div>
+		<script type="text/javascript">
+			function clearSession({ showErrorAlert = false }) {
+				fetch(`/api/wannabemine/${usernameCleaned}`, {
+					method: 'DELETE',
+				});
+
+				if (showErrorAlert) alert(`Error: Ocurrió un error inesperado.`);
+
+				window.localStorage.removeItem('@wannabemine/username');
+				window.location.href = '/';
+			}
+
+			function wait(timeout = 100) {
+				return new Promise((resolve) => setTimeout(resolve, timeout));
+			}
+
+			function animateBox(element, className) {
+				element.classList.add(className);
+				wait(500).then(() => {
+					element.classList.remove(className);
+				});
+			}
+		</script>
+		<script type="text/javascript">
+			const greeting = document.getElementById('greeting');
+			greeting.innerHTML = `Hola, ${username ?? usernameCleaned}`;
+
+			const yesBox = document.getElementById('yessir');
+			const noBox = document.getElementById('nope');
+			const yesCount = document.getElementById('yes_count');
+			const noCount = document.getElementById('nope_count');
+
+			fetch(`/api/wannabemine/${usernameCleaned}`)
+				.then((response) => response.json())
+				.then((data) => {
+					yesCount.innerText = data.attemptsToYes;
+					noCount.innerText = data.attemptsToNot;
+				});
+
+			const socket = io();
+
+			socket.on('connect', () => {
+				socket.on('WANNABEMINE_LIST', (db) => {
+					const myData = db.find(
+						(wannabemine) =>
+							wannabemine.username === (username ?? usernameCleaned)
+					);
+
+					if (!myData) {
+						clearSession({
+							showErrorAlert: true,
+						});
+					}
+
+					const [yesCountNumber, noCountNumber] = [
+						Number(yesCount.innerText),
+						Number(noCount.innerText),
+					];
+
+					if (myData.attemptsToYes > yesCountNumber) {
+						animateBox(yesBox, '!bg-green-100');
+						yesCount.innerText = myData.attemptsToYes;
+					}
+
+					if (myData.attemptsToNot > noCountNumber) {
+						animateBox(noBox, '!bg-red-100');
+						noCount.innerText = myData.attemptsToNot;
+					}
+				});
+			});
+		</script>
+	</body>
+</html>
