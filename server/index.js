@@ -70,6 +70,14 @@ app.post('/api/wannabemine', (request, reply) => {
 				'Por favor usa un nombre de usuario sin espacios (como en TikTok, Instagram, etc).',
 		});
 	}
+	
+	if (username.toLowerCase() === 'shair') {
+		return reply.code(400).send({
+			error: 'Bad Request',
+			statusCode: 400,
+			message: `No puedes usar el nombre de usuario de 'shair'.`,
+		});
+	}
 
 	const found = database.find(
 		(wannabemine) => wannabemine.username === username
