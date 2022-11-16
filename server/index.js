@@ -71,7 +71,7 @@ app.post('/api/wannabemine', (request, reply) => {
 		});
 	}
 	
-	if (username.toLowerCase() === 'shair') {
+	if (username.toLowerCase().includes('shair')) {
 		return reply.code(400).send({
 			error: 'Bad Request',
 			statusCode: 400,
