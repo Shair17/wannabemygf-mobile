@@ -94,7 +94,7 @@
 				}
 
 				const body = {
-					username,
+					username: username.trim(),
 				};
 
 				fetch('/api/wannabemine', {
